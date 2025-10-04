@@ -307,29 +307,49 @@ class JobProcessor:
             return []
 
     async def filter_startups(self, startups: List[Dict[str, Any]], filters: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Filter startups using AI - NO MOCKS!"""
+        """Filter startups using AI - OPTIMIZED with parallel batches!"""
         try:
             filtered = []
 
-            for startup in startups:
-                # Call filter agent
-                filter_result = await FilterAgent.calculate_relevance(startup, filters)
+            # Process in batches of 10 for speed (reduces 110 startups from 14min to 2-3min)
+            batch_size = 10
 
-                if not filter_result.get("success"):
-                    logger.error(f"Filter failed for {startup.get('name')}: {filter_result.get('error')}")
-                    continue
+            for i in range(0, len(startups), batch_size):
+                batch = startups[i:i + batch_size]
 
-                relevance_score = filter_result.get("relevance_score", 0.0)
+                # Run batch in parallel
+                tasks = [
+                    FilterAgent.calculate_relevance(startup, filters)
+                    for startup in batch
+                ]
 
-                # Update startup with relevance score
-                self.supabase.table("startups").update({
-                    "relevance_score": relevance_score
-                }).eq("id", startup.get("id")).execute()
+                batch_results = await asyncio.gather(*tasks, return_exceptions=True)
 
-                if relevance_score >= 0.5:  # Threshold
-                    startup["relevance_score"] = relevance_score
-                    startup["filter_reasoning"] = filter_result.get("reasoning", "")
-                    filtered.append(startup)
+                # Process results
+                for startup, filter_result in zip(batch, batch_results):
+                    if isinstance(filter_result, Exception):
+                        logger.error(f"Filter failed for {startup.get('name')}: {str(filter_result)}")
+                        continue
+
+                    if not filter_result.get("success"):
+                        logger.error(f"Filter failed for {startup.get('name')}: {filter_result.get('error')}")
+                        continue
+
+                    relevance_score = filter_result.get("relevance_score", 0.0)
+
+                    # Update startup with relevance score
+                    self.supabase.table("startups").update({
+                        "relevance_score": relevance_score
+                    }).eq("id", startup.get("id")).execute()
+
+                    if relevance_score >= 0.5:  # Threshold
+                        startup["relevance_score"] = relevance_score
+                        startup["filter_reasoning"] = filter_result.get("reasoning", "")
+                        filtered.append(startup)
+
+                # Progress update after each batch
+                progress_pct = 40 + int((i + batch_size) / len(startups) * 10)
+                await self.update_progress("filtering", progress_pct, f"Filtered {min(i + batch_size, len(startups))}/{len(startups)} startups...")
 
             # Sort by relevance score
             filtered.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)

@@ -1,10 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, HTTPException
+from fastapi.responses import Response
 from typing import List, Optional
 import json
 import uuid
 import asyncio
 from app.services.supabase_client import get_supabase_client
 from app.workers.job_processor import JobProcessor
+from app.services.pdf_generator import PDFGenerator
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -193,6 +195,93 @@ async def cancel_job(job_id: str):
         supabase.table("jobs").update({"status": "cancelled"}).eq("id", job_id).execute()
 
         return {"job_id": job_id, "status": "cancelled"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{job_id}/download/{startup_id}")
+async def download_startup_pdf(job_id: str, startup_id: str):
+    """Download PDF report for a single startup - REAL PDF with graphs!"""
+    try:
+        # Get startup
+        startup_response = supabase.table("startups").select("*").eq("id", startup_id).eq("job_id", job_id).execute()
+
+        if not startup_response.data:
+            raise HTTPException(status_code=404, detail="Startup not found")
+
+        startup = startup_response.data[0]
+
+        # Get due diligence
+        dd_response = supabase.table("due_diligence").select("*").eq("startup_id", startup_id).execute()
+
+        if not dd_response.data:
+            raise HTTPException(status_code=404, detail="Due diligence not found")
+
+        dd = dd_response.data[0]
+
+        # Generate PDF with graphs
+        pdf_bytes = PDFGenerator.generate_startup_report(startup, dd)
+
+        # Return as downloadable file
+        filename = f"{startup.get('name', 'startup').replace(' ', '_')}_Report.pdf"
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{job_id}/download-all")
+async def download_portfolio_pdf(job_id: str):
+    """Download complete portfolio report - REAL PDF with all startups!"""
+    try:
+        # Get results
+        results_response = supabase.table("results").select("*").eq("job_id", job_id).execute()
+
+        if not results_response.data:
+            raise HTTPException(status_code=404, detail="Results not found")
+
+        results = results_response.data[0]
+        top_startups = results.get("top_startups", [])
+
+        # Get full details for each startup
+        detailed_startups = []
+
+        for startup_info in top_startups:
+            startup_id = startup_info.get("startup_id")
+
+            # Get startup
+            startup_response = supabase.table("startups").select("*").eq("id", startup_id).execute()
+
+            # Get due diligence
+            dd_response = supabase.table("due_diligence").select("*").eq("startup_id", startup_id).execute()
+
+            if startup_response.data and dd_response.data:
+                detailed_startups.append({
+                    "rank": startup_info.get("rank"),
+                    "startup": startup_response.data[0],
+                    "due_diligence": dd_response.data[0]
+                })
+
+        # Generate portfolio PDF
+        pdf_bytes = PDFGenerator.generate_portfolio_report(detailed_startups)
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=Portfolio_Report.pdf"
+            }
+        )
 
     except HTTPException:
         raise
