@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { NeuralNetwork } from "@/components/neural-network"
 
 interface UploadScreenProps {
-  onStartScreening: (files: File[], filters: any) => void
+  onStartScreening: (files: File[], filters: any, sheetsUrl: string) => void
 }
 
 export function UploadScreen({ onStartScreening }: UploadScreenProps) {
@@ -28,20 +28,40 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const droppedFiles = Array.from(e.dataTransfer.files).filter((file) => file.type === "application/pdf")
-    setFiles((prev) => [...prev, ...droppedFiles])
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(
+      (file) =>
+        file.type === "application/pdf" ||
+        file.type === "text/csv" ||
+        file.name.endsWith('.csv') ||
+        file.name.endsWith('.xlsx') ||
+        file.name.endsWith('.xls')
+    )
+    setFiles((prev) => {
+      const combined = [...prev, ...droppedFiles]
+      return combined.slice(0, 50) // Max 50 files
+    })
   }, [])
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files)
-      setFiles((prev) => [...prev, ...selectedFiles])
+      const selectedFiles = Array.from(e.target.files).filter(
+        (file) =>
+          file.type === "application/pdf" ||
+          file.type === "text/csv" ||
+          file.name.endsWith('.csv') ||
+          file.name.endsWith('.xlsx') ||
+          file.name.endsWith('.xls')
+      )
+      setFiles((prev) => {
+        const combined = [...prev, ...selectedFiles]
+        return combined.slice(0, 50) // Max 50 files
+      })
     }
   }
 
   const handleStartScreening = () => {
     if (files.length > 0 || sheetsUrl) {
-      onStartScreening(files, { thesis, sector, stage, geography, ticketSize })
+      onStartScreening(files, { thesis, sector, stage, geography, ticketSize }, sheetsUrl)
     }
   }
 
@@ -97,7 +117,9 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
 
             {/* File Upload */}
             <div className="mb-6">
-              <Label className="text-sm font-medium mb-2 block">Upload Pitch Decks</Label>
+              <Label className="text-sm font-medium mb-2 block">
+                Upload Files (PDF, CSV, Google Sheets) - Max 50 PDFs
+              </Label>
               <div
                 onDrop={handleDrop}
                 onDragOver={(e) => {
@@ -112,22 +134,30 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
                 <input
                   type="file"
                   multiple
-                  accept=".pdf"
+                  accept=".pdf,.csv,.xlsx,.xls"
                   onChange={handleFileInput}
                   className="hidden"
                   id="file-upload"
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
                   <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">Drag & drop PDF files or click to browse</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Drag & drop files or click to browse
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Supports: PDF, CSV, Excel (.xlsx, .xls) • Up to 50 files
+                  </p>
                   {files.length > 0 && (
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
                       {files.map((file, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-sm text-primary">
+                        <div key={idx} className="flex items-center gap-2 text-sm text-primary justify-center">
                           <FileText className="w-4 h-4" />
                           {file.name}
                         </div>
                       ))}
+                      {files.length >= 50 && (
+                        <p className="text-xs text-amber-500 mt-2">Maximum 50 files reached</p>
+                      )}
                     </div>
                   )}
                 </label>
@@ -137,18 +167,21 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
             {/* Google Sheets URL */}
             <div className="mb-6">
               <Label htmlFor="sheets-url" className="text-sm font-medium mb-2 block">
-                Google Sheets URL (Optional)
+                Or Paste Public Google Sheets Link
               </Label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="sheets-url"
-                  placeholder="https://docs.google.com/spreadsheets/..."
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
                   value={sheetsUrl}
                   onChange={(e) => setSheetsUrl(e.target.value)}
                   className="pl-10"
                 />
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Sheet must be public with columns: name, sector, stage, geography, ticket_size, summary, pdf_link
+              </p>
             </div>
 
             {/* Investment Thesis */}

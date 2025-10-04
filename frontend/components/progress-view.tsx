@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Brain, Filter, Search, BarChart3, Flame, Check } from "lucide-react"
 import { useState, useEffect } from "react"
+import { getJobStatus } from "@/lib/api"
 
 const agents = [
   { name: "Qwen3-VL", icon: Brain, task: "Parsing pitch decks", x: 50, y: 20 },
@@ -23,25 +24,61 @@ const connections = [
   { from: 3, to: 4 }, // Gemini → Grok
 ]
 
-export function ProgressView() {
+interface ProgressViewProps {
+  jobId: string
+  onComplete: () => void
+}
+
+export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
   const [activeAgent, setActiveAgent] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [statusMessage, setStatusMessage] = useState("Initializing...")
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveAgent((prev) => {
-        const next = (prev + 1) % agents.length
-        if (next < prev) {
-          setCompletedSteps([0, 1, 2, 3, 4])
-        } else {
-          setCompletedSteps((prev) => [...prev, next])
-        }
-        return next
-      })
-    }, 6000)
+    // Poll job status every 3 seconds - NO MOCK DATA
+    const pollInterval = setInterval(async () => {
+      try {
+        const jobData = await getJobStatus(jobId)
 
-    return () => clearInterval(interval)
-  }, [])
+        // Update status message
+        const progress = jobData.progress || {}
+        setStatusMessage(progress.status_message || "Processing...")
+
+        // Map job status to agent steps
+        const status = jobData.status
+        if (status === "parsing") {
+          setActiveAgent(0)
+          setCompletedSteps([])
+        } else if (status === "filtering") {
+          setActiveAgent(1)
+          setCompletedSteps([0])
+        } else if (status === "dd_running") {
+          const percent = progress.percent || 60
+          if (percent >= 60 && percent < 70) {
+            setActiveAgent(2)
+            setCompletedSteps([0, 1])
+          } else if (percent >= 70 && percent < 80) {
+            setActiveAgent(3)
+            setCompletedSteps([0, 1, 2])
+          } else {
+            setActiveAgent(4)
+            setCompletedSteps([0, 1, 2, 3])
+          }
+        } else if (status === "completed") {
+          setCompletedSteps([0, 1, 2, 3, 4])
+          clearInterval(pollInterval)
+          setTimeout(() => onComplete(), 2000)
+        } else if (status === "failed") {
+          clearInterval(pollInterval)
+          alert(`Job failed: ${jobData.error_log || "Unknown error"}`)
+        }
+      } catch (error) {
+        console.error("Failed to poll job status:", error)
+      }
+    }, 3000)
+
+    return () => clearInterval(pollInterval)
+  }, [jobId, onComplete])
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center bg-background">
@@ -429,6 +466,7 @@ export function ProgressView() {
               Processing: <span className="text-[#00D1FF] font-semibold">{agents[activeAgent].name}</span>{" "}
               <span className="text-foreground/40">—</span> {agents[activeAgent].task}
             </p>
+            <p className="text-xs text-foreground/40 mt-2">{statusMessage}</p>
           </motion.div>
 
           <div className="flex justify-center gap-2 sm:gap-3">
