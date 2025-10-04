@@ -1,0 +1,1 @@
+# Services (Supabase, Redis, etc.)

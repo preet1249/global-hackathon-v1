@@ -1,0 +1,29 @@
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-dotenv==1.0.1
+supabase==2.4.0
+pydantic==2.6.4
+python-multipart==0.0.9
+aiofiles==23.2.1
+
+# PDF Processing
+PyMuPDF==1.24.0
+pdfplumber==0.11.0
+
+# Web Scraping
+playwright==1.42.0
+beautifulsoup4==4.12.3
+httpx==0.27.0
+
+# LLM APIs
+openai==1.14.0
+anthropic==0.18.1
+
+# Background Jobs
+redis==5.0.3
+rq==1.16.1
+
+# Utilities
+Pillow==10.2.0
+pandas==2.2.1
+python-magic==0.4.27

@@ -116,4 +116,22 @@ Design sensibility, user experience, aesthetic choices. Is it intuitive? Does it
 
 ---
 
+## 📁 Project Structure
+
+Our project is organized as:
+
+```
+├── frontend/          # Next.js (Deploy to Vercel)
+├── backend/           # FastAPI + Docker (Deploy to Render)
+└── prompt.md          # Complete specification
+```
+
+### Frontend Setup
+See [frontend/README.md](frontend/README.md) for deployment instructions.
+
+### Backend Setup
+See [backend/README.md](backend/README.md) for deployment instructions.
+
+---
+
 **Good luck! 🎉**
