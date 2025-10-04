@@ -66,6 +66,10 @@ Generate final investment assessment with:
 
 7. Overall Summary: Investment recommendation
 
+8. Detailed Analysis (2 paragraphs):
+   - Paragraph 1: Why this startup is good, unique value proposition, competitive advantages
+   - Paragraph 2: What problem they're solving, market opportunity, why this specific solution stands out
+
 Return ONLY valid JSON:
 {{
   "risk_heatmap": {{
@@ -89,6 +93,7 @@ Return ONLY valid JSON:
     "Early traction validates product-market fit"
   ],
   "overall_summary": "Brief investment recommendation with reasoning",
+  "detailed_analysis": "Two detailed paragraphs explaining why this is good and what they're solving. First paragraph focuses on strengths and competitive advantages. Second paragraph explains the problem space and market opportunity.",
   "recommendation": "strong_buy|buy|hold|pass"
 }}"""
 
@@ -128,6 +133,7 @@ Return ONLY valid JSON:
                     "profit_margin": parsed_data.get("profit_margin", 0.0),
                     "key_points": parsed_data.get("key_points", []),
                     "overall_summary": parsed_data.get("overall_summary", ""),
+                    "detailed_analysis": parsed_data.get("detailed_analysis", ""),
                     "recommendation": parsed_data.get("recommendation", "hold"),
                     "agent": "risk",
                     "model": result.get("model")

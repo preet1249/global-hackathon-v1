@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS due_diligence (
   profit_margin FLOAT,           -- predicted %
   key_points JSONB,              -- array of bullet insights
   overall_summary TEXT,
+  detailed_analysis TEXT,        -- 2 paragraphs for "View More"
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

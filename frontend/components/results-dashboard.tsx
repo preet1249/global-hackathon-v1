@@ -10,84 +10,6 @@ import { StartupCard } from "@/components/startup-card"
 import { RiskHeatmap } from "@/components/risk-heatmap"
 import { getJobResults } from "@/lib/api"
 
-const mockStartups = [
-  {
-    id: 1,
-    name: "NeuralFlow AI",
-    logo: "🧠",
-    tagline: "Next-gen AI infrastructure for enterprise workflows",
-    fitScore: 94,
-    sector: "AI Infrastructure",
-    stage: "Series A",
-    metrics: {
-      successRate: 87,
-      marketFit: 92,
-      techCredibility: 89,
-      competition: 45,
-    },
-  },
-  {
-    id: 2,
-    name: "QuantumSecure",
-    logo: "🔐",
-    tagline: "Post-quantum cryptography for financial institutions",
-    fitScore: 91,
-    sector: "Cybersecurity",
-    stage: "Seed",
-    metrics: {
-      successRate: 84,
-      marketFit: 88,
-      techCredibility: 95,
-      competition: 38,
-    },
-  },
-  {
-    id: 3,
-    name: "BioSynth Labs",
-    logo: "🧬",
-    tagline: "Synthetic biology platform for drug discovery",
-    fitScore: 88,
-    sector: "BioTech",
-    stage: "Series A",
-    metrics: {
-      successRate: 81,
-      marketFit: 85,
-      techCredibility: 91,
-      competition: 52,
-    },
-  },
-  {
-    id: 4,
-    name: "ClimateOS",
-    logo: "🌍",
-    tagline: "Carbon accounting and ESG compliance automation",
-    fitScore: 86,
-    sector: "ClimaTech",
-    stage: "Seed",
-    metrics: {
-      successRate: 79,
-      marketFit: 83,
-      techCredibility: 86,
-      competition: 48,
-    },
-  },
-  {
-    id: 5,
-    name: "EdgeCompute",
-    logo: "⚡",
-    tagline: "Distributed edge computing for IoT applications",
-    fitScore: 85,
-    sector: "Infrastructure",
-    stage: "Series A",
-    metrics: {
-      successRate: 78,
-      marketFit: 81,
-      techCredibility: 88,
-      competition: 55,
-    },
-  },
-]
-
 interface ResultsDashboardProps {
   jobId: string
   onReset: () => void
@@ -124,7 +46,20 @@ export function ResultsDashboard({ jobId, onReset }: ResultsDashboardProps) {
     )
   }
 
-  const displayStartups = startups.length > 0 ? startups : mockStartups
+  if (startups.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-foreground/60 mb-4">No startups matched your criteria.</p>
+          <Button onClick={onReset} className="bg-gradient-blue hover:opacity-90">
+            Start New Analysis
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const displayStartups = startups
 
   const avgSuccessRate = displayStartups.length > 0
     ? Math.round(
@@ -348,6 +283,7 @@ export function ResultsDashboard({ jobId, onReset }: ResultsDashboardProps) {
                         techCredibility: startup.metrics?.techCredibility || 85,
                         competition: Math.round(item.due_diligence?.competition_difficulty || startup.metrics?.competition || 50),
                       },
+                      detailedAnalysis: item.due_diligence?.detailed_analysis || undefined,
                     }}
                     isSelected={selectedStartup === startupId}
                     onSelect={() => setSelectedStartup(selectedStartup === startupId ? null : startupId)}

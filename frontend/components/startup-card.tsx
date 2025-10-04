@@ -20,6 +20,7 @@ interface Startup {
     techCredibility: number
     competition: number
   }
+  detailedAnalysis?: string
 }
 
 interface StartupCardProps {
@@ -109,6 +110,15 @@ export function StartupCard({ startup, isSelected, onSelect, onDownload }: Start
                     value={startup.metrics.competition}
                   />
                 </div>
+
+                {startup.detailedAnalysis && (
+                  <div className="mb-4 sm:mb-6 p-4 rounded-lg bg-foreground/5 border border-foreground/10">
+                    <h4 className="text-sm sm:text-base font-semibold mb-3 text-[#00D1FF]">Detailed Analysis</h4>
+                    <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed whitespace-pre-line">
+                      {startup.detailedAnalysis}
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <Button className="flex-1 bg-gradient-blue hover:opacity-90 text-white hover-glow text-sm sm:text-base">
