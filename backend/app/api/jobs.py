@@ -70,6 +70,17 @@ async def create_job(
 
                 supabase.table("files").insert(file_data).execute()
 
+        # Handle Google Sheet link if provided
+        if google_sheet_link:
+            sheet_data = {
+                "job_id": job_id,
+                "file_type": "sheet",
+                "original_name": google_sheet_link,  # Store URL as original_name
+                "storage_path": None  # No storage path for sheets
+            }
+
+            supabase.table("files").insert(sheet_data).execute()
+
         # Start processing in background
         background_tasks.add_task(process_job_background, job_id)
 

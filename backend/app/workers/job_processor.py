@@ -5,6 +5,7 @@ import os
 from typing import Dict, Any, List
 from app.services.supabase_client import get_supabase_client
 from app.services.pdf_parser import PDFParser
+from app.services.sheets_parser import GoogleSheetsParser
 from app.agents.agent_parser import ParserAgent
 from app.agents.agent_filter import FilterAgent
 from app.agents.agent_tech import TechAgent
@@ -116,7 +117,7 @@ class JobProcessor:
             await self.log_error(f"Critical error: {str(e)}")
 
     async def parse_files(self) -> List[Dict[str, Any]]:
-        """Parse all uploaded files"""
+        """Parse all uploaded files (PDFs and Google Sheets)"""
         try:
             # Get all files for this job
             files_response = self.supabase.table("files").select("*").eq("job_id", self.job_id).execute()
@@ -129,12 +130,15 @@ class JobProcessor:
 
             for file_record in files_response.data:
                 file_type = file_record.get("file_type")
-                storage_path = file_record.get("storage_path")
 
                 if file_type == "pdf":
                     startup_data = await self.parse_pdf_file(file_record)
                     if startup_data:
                         startups.append(startup_data)
+
+                elif file_type == "sheet":
+                    sheet_startups = await self.parse_google_sheet(file_record)
+                    startups.extend(sheet_startups)
 
             return startups
 
@@ -214,6 +218,93 @@ class JobProcessor:
         except Exception as e:
             logger.error(f"PDF file processing error: {str(e)}")
             return None
+
+    async def parse_google_sheet(self, file_record: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Parse Google Sheet and extract startups - NO MOCKS!"""
+        try:
+            sheet_url = file_record.get("original_name")  # We store the URL in original_name for sheets
+
+            # Parse the Google Sheet
+            sheet_result = await GoogleSheetsParser.parse_sheet(sheet_url)
+
+            if not sheet_result.get("success"):
+                logger.error(f"Sheet parsing failed: {sheet_result.get('error')}")
+                return []
+
+            # Save parsed data to files table
+            self.supabase.table("files").update({
+                "parsed": sheet_result
+            }).eq("id", file_record.get("id")).execute()
+
+            startups = []
+            sheet_startups = sheet_result.get("startups", [])
+
+            for row_data in sheet_startups:
+                # Handle PDF link if present
+                pdf_link = row_data.get("pdf_link", "").strip()
+
+                if pdf_link:
+                    # Download and parse PDF from URL
+                    pdf_bytes = await GoogleSheetsParser.download_pdf_from_url(pdf_link)
+
+                    if pdf_bytes:
+                        # Save to temp file and parse
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+                            tmp_file.write(pdf_bytes)
+                            tmp_path = tmp_file.name
+
+                        try:
+                            pdf_data = PDFParser.parse_pdf(tmp_path)
+
+                            if pdf_data.get("success"):
+                                # Use AI to extract structured data
+                                parser_result = await ParserAgent.parse_pdf_content(
+                                    pdf_text=pdf_data.get("full_text", ""),
+                                    pdf_data=pdf_data
+                                )
+
+                                if parser_result.get("success"):
+                                    extracted_data = parser_result.get("data", {})
+                                    # Merge sheet data with PDF extracted data
+                                    row_data.update(extracted_data)
+
+                        finally:
+                            if os.path.exists(tmp_path):
+                                os.unlink(tmp_path)
+
+                # Create startup entry from sheet row
+                parsed_ticket = row_data.get("parsed_ticket_size", {})
+
+                startup_entry = {
+                    "job_id": self.job_id,
+                    "source_file_id": file_record.get("id"),
+                    "name": row_data.get("name", ""),
+                    "sector": row_data.get("sector", ""),
+                    "stage": row_data.get("stage", ""),
+                    "geography": row_data.get("geography", ""),
+                    "ticket_size_min": parsed_ticket.get("min"),
+                    "ticket_size_max": parsed_ticket.get("max"),
+                    "summary": row_data.get("summary", ""),
+                    "metadata": {
+                        "team": row_data.get("team", ""),
+                        "traction": row_data.get("traction", ""),
+                        "product": row_data.get("product", ""),
+                        "website": row_data.get("website", ""),
+                        "pdf_link": row_data.get("pdf_link", "")
+                    }
+                }
+
+                startup_response = self.supabase.table("startups").insert(startup_entry).execute()
+
+                if startup_response.data:
+                    startups.append(startup_response.data[0])
+
+            logger.info(f"Parsed {len(startups)} startups from Google Sheet")
+            return startups
+
+        except Exception as e:
+            logger.error(f"Google Sheet processing error: {str(e)}")
+            return []
 
     async def filter_startups(self, startups: List[Dict[str, Any]], filters: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Filter startups using AI - NO MOCKS!"""
