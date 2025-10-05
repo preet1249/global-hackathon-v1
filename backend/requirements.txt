@@ -26,6 +26,8 @@ rq==1.16.1
 # Utilities
 Pillow==10.2.0
 pandas==2.2.1
+openpyxl==3.1.2
+xlrd==2.0.1
 
 # PDF Generation
 reportlab==4.0.9

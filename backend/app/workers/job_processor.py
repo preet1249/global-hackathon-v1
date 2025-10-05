@@ -6,6 +6,7 @@ from typing import Dict, Any, List
 from app.services.supabase_client import get_supabase_client
 from app.services.pdf_parser import PDFParser
 from app.services.sheets_parser import GoogleSheetsParser
+from app.services.excel_parser import ExcelParser
 from app.agents.agent_parser import ParserAgent
 from app.agents.agent_filter import FilterAgent
 from app.agents.agent_tech import TechAgent
@@ -136,6 +137,10 @@ class JobProcessor:
                     if startup_data:
                         startups.append(startup_data)
 
+                elif file_type in ["excel", "csv"]:
+                    excel_startups = await self.parse_excel_file(file_record)
+                    startups.extend(excel_startups)
+
                 elif file_type == "sheet":
                     sheet_startups = await self.parse_google_sheet(file_record)
                     startups.extend(sheet_startups)
@@ -218,6 +223,65 @@ class JobProcessor:
         except Exception as e:
             logger.error(f"PDF file processing error: {str(e)}")
             return None
+
+    async def parse_excel_file(self, file_record: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Parse Excel/CSV file and extract startups - NO MOCKS!"""
+        try:
+            storage_path = file_record.get("storage_path")
+            filename = file_record.get("original_name")
+
+            # Download file from Supabase Storage
+            file_data = self.supabase.storage.from_("pitch-decks").download(storage_path)
+
+            # Parse Excel/CSV
+            excel_result = ExcelParser.parse_excel(file_data, filename)
+
+            if not excel_result.get("success"):
+                logger.error(f"Excel/CSV parsing failed: {excel_result.get('error')}")
+                return []
+
+            # Save parsed data to files table
+            self.supabase.table("files").update({
+                "parsed": excel_result
+            }).eq("id", file_record.get("id")).execute()
+
+            startups = []
+            excel_startups = excel_result.get("startups", [])
+
+            for row_data in excel_startups:
+                # Create startup entry from row
+                parsed_ticket = row_data.get("parsed_ticket_size", {})
+
+                startup_entry = {
+                    "job_id": self.job_id,
+                    "source_file_id": file_record.get("id"),
+                    "name": row_data.get("name", ""),
+                    "sector": row_data.get("sector", ""),
+                    "stage": row_data.get("stage", ""),
+                    "geography": row_data.get("geography", ""),
+                    "ticket_size_min": parsed_ticket.get("min"),
+                    "ticket_size_max": parsed_ticket.get("max"),
+                    "summary": row_data.get("summary", ""),
+                    "metadata": {
+                        "team": row_data.get("team", ""),
+                        "traction": row_data.get("traction", ""),
+                        "product": row_data.get("product", ""),
+                        "website": row_data.get("website", ""),
+                        "pdf_link": row_data.get("pdf_link", "")
+                    }
+                }
+
+                startup_response = self.supabase.table("startups").insert(startup_entry).execute()
+
+                if startup_response.data:
+                    startups.append(startup_response.data[0])
+
+            logger.info(f"Parsed {len(startups)} startups from Excel/CSV file")
+            return startups
+
+        except Exception as e:
+            logger.error(f"Excel/CSV file processing error: {str(e)}")
+            return []
 
     async def parse_google_sheet(self, file_record: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Parse Google Sheet and extract startups - NO MOCKS!"""

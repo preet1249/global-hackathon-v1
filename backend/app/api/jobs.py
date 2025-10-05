@@ -75,10 +75,21 @@ async def create_job(
                     file_options={"content-type": file.content_type}
                 )
 
+                # Detect file type from filename
+                filename_lower = file.filename.lower()
+                if filename_lower.endswith('.pdf'):
+                    file_type = "pdf"
+                elif filename_lower.endswith(('.xlsx', '.xls')):
+                    file_type = "excel"
+                elif filename_lower.endswith('.csv'):
+                    file_type = "csv"
+                else:
+                    file_type = "unknown"
+
                 # Create file record
                 file_data = {
                     "job_id": job_id,
-                    "file_type": "pdf",
+                    "file_type": file_type,
                     "original_name": file.filename,
                     "storage_path": file_path
                 }
