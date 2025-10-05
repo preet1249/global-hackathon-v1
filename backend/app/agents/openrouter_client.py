@@ -20,7 +20,7 @@ class OpenRouterClient:
             "name": "openai/gpt-4o-mini"
         },
         "deepseek": {
-            "name": "deepseek/deepseek-chat"
+            "name": "deepseek/deepseek-chat-v3.1"
         },
         "gemini": {
             "name": "google/gemini-2.5-flash-lite-preview-09-2025"
