@@ -26,7 +26,7 @@ class OpenRouterClient:
             "key": "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"
         },
         "gemini": {
-            "name": "google/gemini-2.0-flash-thinking-exp:free",
+            "name": "google/gemini-2.5-flash-lite-preview-09-2025",
             "key": "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"
         },
         "grok": {
