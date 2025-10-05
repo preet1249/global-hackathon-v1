@@ -17,7 +17,7 @@ class OpenRouterClient:
             "name": "qwen/qwen3-30b-a3b-instruct-2507"
         },
         "gpt5": {
-            "name": "openai/gpt-5-nano"
+            "name": "openai/gpt-4o-mini"
         },
         "deepseek": {
             "name": "deepseek/deepseek-chat-v3.1"
