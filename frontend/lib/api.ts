@@ -39,9 +39,9 @@ export async function checkBackendHealth() {
 // Create job example
 export async function createJob(formData: FormData) {
   try {
-    console.log('Creating job at:', `${API_URL}/api/jobs`)
+    console.log('Creating job at:', `${API_URL}/api/jobs/`)
 
-    const response = await fetch(`${API_URL}/api/jobs`, {
+    const response = await fetch(`${API_URL}/api/jobs/`, {
       method: 'POST',
       body: formData, // Don't set Content-Type for FormData
     })
