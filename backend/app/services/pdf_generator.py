@@ -98,10 +98,9 @@ class PDFGenerator:
             # Title Section with emoji
             story.append(Paragraph(f"🚀 <b>{startup_data.get('name', 'Unknown Startup')}</b>", title_style))
 
-            # Add recommendation badge
-            recommendation = dd_data.get('recommendation', 'hold').upper()
-            rec_emoji = {"BUY": "✅", "STRONG BUY": "💎", "HOLD": "⏸", "PASS": "❌"}.get(recommendation, "ℹ️")
-            story.append(Paragraph(f"{rec_emoji} Investment Recommendation: <b>{recommendation}</b>", subtitle_style))
+            # Add success rate subtitle
+            success_rate = dd_data.get('success_rate', 0)
+            story.append(Paragraph(f"📈 Success Rate: <b>{success_rate:.1f}%</b>", subtitle_style))
             story.append(Spacer(1, 0.15*inch))
 
             # Basic Info Table - Modern design with emojis
@@ -109,8 +108,7 @@ class PDFGenerator:
                 ['📊 Sector', startup_data.get('sector', 'N/A')],
                 ['🎯 Stage', startup_data.get('stage', 'N/A')],
                 ['🌍 Geography', startup_data.get('geography', 'N/A')],
-                ['📈 Success Rate', f"{dd_data.get('success_rate', 0):.1f}%"],
-                ['🏆 Market Fit', f"{dd_data.get('market_score', 0)*100:.0f}%"]
+                ['⚔️ Competition', f"{dd_data.get('competition_difficulty', 0):.1f}%"]
             ]
 
             info_table = Table(basic_info, colWidths=[2.2*inch, 4*inch])
@@ -189,18 +187,12 @@ class PDFGenerator:
 
             story.append(Spacer(1, 0.25*inch))
 
-            # Detailed Analysis - THE CRITICAL 2 PARAGRAPHS
-            detailed_analysis = dd_data.get('detailed_analysis', '')
-            if detailed_analysis:
-                story.append(Paragraph("📝 <b>Detailed Investment Analysis</b>", heading_style))
-
-                # Split the analysis into paragraphs if it contains \n\n
-                paragraphs = detailed_analysis.split('\\n\\n') if '\\n\\n' in detailed_analysis else [detailed_analysis]
-
-                for para in paragraphs:
-                    if para.strip():
-                        story.append(Paragraph(para.strip(), analysis_style))
-                        story.append(Spacer(1, 0.12*inch))
+            # Overall Summary Analysis
+            overall_summary = dd_data.get('overall_summary', '')
+            if overall_summary:
+                story.append(Paragraph("📝 <b>Investment Summary</b>", heading_style))
+                story.append(Paragraph(overall_summary, analysis_style))
+                story.append(Spacer(1, 0.12*inch))
 
             # Footer - Modern with better spacing
             story.append(Spacer(1, 0.4*inch))
@@ -350,11 +342,9 @@ class PDFGenerator:
             for idx, item in enumerate(startups, 1):
                 startup = item.get('startup', item)
                 dd = item.get('due_diligence', {})
-                rec = dd.get('recommendation', 'hold').upper()
-                rec_emoji = {"BUY": "✅", "STRONG BUY": "💎", "HOLD": "⏸", "PASS": "❌"}.get(rec, "ℹ️")
 
                 summary_data.append([
-                    f"{rec_emoji} #{idx}",
+                    f"#{idx}",
                     startup.get('name', 'Unknown')[:30],
                     startup.get('sector', 'N/A')[:25],
                     f"{dd.get('success_rate', 0):.0f}%"
@@ -383,12 +373,9 @@ class PDFGenerator:
                 dd = item.get('due_diligence', {})
 
                 # Startup Header
-                rec = dd.get('recommendation', 'hold').upper()
-                rec_emoji = {"BUY": "✅", "STRONG BUY": "💎", "HOLD": "⏸", "PASS": "❌"}.get(rec, "ℹ️")
-
-                story.append(Paragraph(f"<b>#{idx} • {startup.get('name', 'Unknown')}</b> {rec_emoji}", heading_style))
+                story.append(Paragraph(f"<b>#{idx} • {startup.get('name', 'Unknown')}</b>", heading_style))
                 story.append(Paragraph(f"📊 {startup.get('sector', 'N/A')} • 🎯 {startup.get('stage', 'N/A')} • 🌍 {startup.get('geography', 'N/A')}", body_style))
-                story.append(Paragraph(f"📈 Success Rate: <b>{dd.get('success_rate', 0):.1f}%</b> • 🏆 Market Fit: <b>{dd.get('market_score', 0)*100:.0f}%</b>", body_style))
+                story.append(Paragraph(f"📈 Success Rate: <b>{dd.get('success_rate', 0):.1f}%</b> • ⚔️ Competition: <b>{dd.get('competition_difficulty', 0):.1f}%</b>", body_style))
                 story.append(Spacer(1, 0.2*inch))
 
                 # Executive Summary
@@ -404,15 +391,8 @@ class PDFGenerator:
                     story.append(Paragraph(overall, body_style))
                     story.append(Spacer(1, 0.15*inch))
 
-                # Detailed Analysis
-                detailed = dd.get('detailed_analysis', '')
-                if detailed:
-                    story.append(Paragraph("<b>📝 Detailed Analysis:</b>", body_style))
-                    paragraphs = detailed.split('\\n\\n') if '\\n\\n' in detailed else [detailed]
-                    for para in paragraphs:
-                        if para.strip():
-                            story.append(Paragraph(para.strip(), body_style))
-                            story.append(Spacer(1, 0.1*inch))
+                # Overall Summary (instead of detailed_analysis which doesn't exist)
+                # Removed detailed_analysis reference - field doesn't exist in DB yet
 
                 if idx < len(startups):
                     story.append(PageBreak())
