@@ -468,8 +468,7 @@ class JobProcessor:
                     "revenue_projection": risk_result.get("revenue_projection"),
                     "profit_margin": risk_result.get("profit_margin"),
                     "key_points": risk_result.get("key_points"),
-                    "overall_summary": risk_result.get("overall_summary"),
-                    "detailed_analysis": risk_result.get("detailed_analysis", "")
+                    "overall_summary": risk_result.get("overall_summary")
                 }
 
                 dd_response = self.supabase.table("due_diligence").insert(dd_entry).execute()
