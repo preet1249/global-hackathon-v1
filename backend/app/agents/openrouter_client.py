@@ -11,27 +11,22 @@ class OpenRouterClient:
 
     OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-    # Model configurations from prompt.md
+    # Model configurations - API key from environment variable
     MODELS = {
         "qwen": {
-            "name": "qwen/qwen-2.5-72b-instruct",
-            "key": "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"
+            "name": "qwen/qwen-2.5-72b-instruct"
         },
         "gpt5": {
-            "name": "openai/gpt-4o-mini",  # Using gpt-4o-mini as gpt-5-mini might not be available
-            "key": "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"
+            "name": "openai/gpt-4o-mini"
         },
         "deepseek": {
-            "name": "deepseek/deepseek-chat",
-            "key": "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"
+            "name": "deepseek/deepseek-chat"
         },
         "gemini": {
-            "name": "google/gemini-2.5-flash-lite-preview-09-2025",
-            "key": "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"
+            "name": "google/gemini-2.5-flash-lite-preview-09-2025"
         },
         "grok": {
-            "name": "x-ai/grok-4-fast",
-            "key": "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"
+            "name": "x-ai/grok-4-fast"
         }
     }
 
@@ -64,7 +59,13 @@ class OpenRouterClient:
 
         model_config = OpenRouterClient.MODELS[model_key]
         model_name = model_config["name"]
-        api_key = model_config["key"]
+        api_key = os.getenv("OPENROUTER_API_KEY")
+
+        if not api_key:
+            return {
+                "success": False,
+                "error": "OPENROUTER_API_KEY environment variable not set"
+            }
 
         headers = {
             "Authorization": f"Bearer {api_key}",
