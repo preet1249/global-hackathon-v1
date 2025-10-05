@@ -11,42 +11,8 @@ import { Footer } from "@/components/footer"
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-dark relative overflow-hidden">
-      {/* Animated background elements - FIXED z-index and opacity */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-        <motion.div
-          className="absolute top-20 left-10 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{
-            background: "radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%)",
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.1, 0.05],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{
-            background: "radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%)",
-          }}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.1, 0.05, 0.1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative">
         <Navbar />
 
         {/* Hero Section */}
