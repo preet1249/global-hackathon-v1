@@ -61,9 +61,9 @@ export default function AppPage() {
         setAppState("processing")
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to start screening:", error)
-      alert("Failed to start screening. Please try again.")
+      alert(`Failed to start screening: ${error.message || error}\n\nPlease check:\n1. Backend is running at ${process.env.NEXT_PUBLIC_API_URL}\n2. Files are uploaded correctly\n3. Browser console for details`)
     }
   }
 

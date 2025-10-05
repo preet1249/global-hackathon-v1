@@ -38,16 +38,29 @@ export async function checkBackendHealth() {
 
 // Create job example
 export async function createJob(formData: FormData) {
-  const response = await fetch(`${API_URL}/api/jobs`, {
-    method: 'POST',
-    body: formData, // Don't set Content-Type for FormData
-  })
+  try {
+    console.log('Creating job at:', `${API_URL}/api/jobs`)
 
-  if (!response.ok) {
-    throw new Error(`Failed to create job: ${response.status}`)
+    const response = await fetch(`${API_URL}/api/jobs`, {
+      method: 'POST',
+      body: formData, // Don't set Content-Type for FormData
+    })
+
+    console.log('Response status:', response.status)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Backend error:', errorText)
+      throw new Error(`Failed to create job: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log('Job created:', data)
+    return data
+  } catch (error) {
+    console.error('Create job error:', error)
+    throw error
   }
-
-  return await response.json()
 }
 
 // Get job status
