@@ -15,23 +15,23 @@ class OpenRouterClient:
     MODELS = {
         "qwen": {
             "name": "qwen/qwen-2.5-72b-instruct",
-            "key": "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"
+            "key": "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"
         },
         "gpt5": {
             "name": "openai/gpt-4o-mini",  # Using gpt-4o-mini as gpt-5-mini might not be available
-            "key": "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"
+            "key": "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"
         },
         "deepseek": {
             "name": "deepseek/deepseek-chat",
-            "key": "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"
+            "key": "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"
         },
         "gemini": {
             "name": "google/gemini-2.0-flash-exp:free",
-            "key": "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"
+            "key": "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"
         },
         "grok": {
             "name": "x-ai/grok-beta",
-            "key": "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"
+            "key": "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"
         }
     }
 
