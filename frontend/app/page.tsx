@@ -31,7 +31,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-6xl md:text-7xl font-bold mb-6 leading-tight text-foreground"
             >
-              Find Your Next <span className="inline-block bg-gradient-blue bg-clip-text text-transparent glow-text">Winning</span>
+              Find Your Next <span className="text-[#00D1FF] glow-text">Winning</span>
               <br />
               Investments
             </motion.h1>
@@ -85,7 +85,7 @@ export default function LandingPage() {
           >
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                Built for <span className="inline-block bg-gradient-blue bg-clip-text text-transparent">Modern Investors</span>
+                Built for <span className="text-[#00D1FF]">Modern Investors</span>
               </h2>
               <p className="text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed">
                 InvestAI combines cutting-edge artificial intelligence with decades of venture capital expertise to
@@ -127,7 +127,7 @@ export default function LandingPage() {
           >
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                Loved by <span className="inline-block bg-gradient-blue bg-clip-text text-transparent">Investors</span>
+                Loved by <span className="text-[#00D1FF]">Investors</span>
               </h2>
               <div className="flex items-center justify-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -168,7 +168,7 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
 function StatCard({ number, label }: { number: string; label: string }) {
   return (
     <div className="text-center">
-      <div className="text-4xl md:text-5xl font-bold inline-block bg-gradient-blue bg-clip-text text-transparent mb-2">{number}</div>
+      <div className="text-4xl md:text-5xl font-bold text-[#00D1FF] mb-2">{number}</div>
       <div className="text-sm text-foreground/70">{label}</div>
     </div>
   )
