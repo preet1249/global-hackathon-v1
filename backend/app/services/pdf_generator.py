@@ -39,132 +39,182 @@ class PDFGenerator:
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=letter,
                                    rightMargin=50, leftMargin=50,
-                                   topMargin=50, bottomMargin=50)
+                                   topMargin=40, bottomMargin=40)
 
             story = []
             styles = getSampleStyleSheet()
 
-            # Custom styles
+            # Custom styles - Modern and clean
             title_style = ParagraphStyle(
                 'CustomTitle',
                 parent=styles['Heading1'],
-                fontSize=24,
+                fontSize=26,
                 textColor=colors.HexColor('#00D1FF'),
-                spaceAfter=30,
-                alignment=TA_CENTER
+                spaceAfter=10,
+                alignment=TA_CENTER,
+                fontName='Helvetica-Bold'
+            )
+
+            subtitle_style = ParagraphStyle(
+                'Subtitle',
+                parent=styles['Normal'],
+                fontSize=11,
+                textColor=colors.HexColor('#666666'),
+                spaceAfter=25,
+                alignment=TA_CENTER,
+                fontName='Helvetica'
             )
 
             heading_style = ParagraphStyle(
                 'CustomHeading',
                 parent=styles['Heading2'],
-                fontSize=14,
+                fontSize=15,
                 textColor=colors.HexColor('#00D1FF'),
-                spaceAfter=12,
-                spaceBefore=20
+                spaceAfter=10,
+                spaceBefore=18,
+                fontName='Helvetica-Bold'
             )
 
             body_style = ParagraphStyle(
                 'CustomBody',
                 parent=styles['BodyText'],
                 fontSize=10,
-                spaceAfter=12
+                spaceAfter=10,
+                leading=14,
+                fontName='Helvetica'
             )
 
-            # Title
-            story.append(Paragraph(f"<b>{startup_data.get('name', 'Unknown Startup')}</b>", title_style))
-            story.append(Spacer(1, 0.2*inch))
+            analysis_style = ParagraphStyle(
+                'AnalysisBody',
+                parent=styles['BodyText'],
+                fontSize=10,
+                spaceAfter=12,
+                leading=15,
+                fontName='Helvetica',
+                leftIndent=10,
+                rightIndent=10
+            )
 
-            # Basic Info Table
+            # Title Section with emoji
+            story.append(Paragraph(f"🚀 <b>{startup_data.get('name', 'Unknown Startup')}</b>", title_style))
+
+            # Add recommendation badge
+            recommendation = dd_data.get('recommendation', 'hold').upper()
+            rec_emoji = {"BUY": "✅", "STRONG BUY": "💎", "HOLD": "⏸", "PASS": "❌"}.get(recommendation, "ℹ️")
+            story.append(Paragraph(f"{rec_emoji} Investment Recommendation: <b>{recommendation}</b>", subtitle_style))
+            story.append(Spacer(1, 0.15*inch))
+
+            # Basic Info Table - Modern design with emojis
             basic_info = [
-                ['Sector:', startup_data.get('sector', 'N/A')],
-                ['Stage:', startup_data.get('stage', 'N/A')],
-                ['Geography:', startup_data.get('geography', 'N/A')],
-                ['Success Rate:', f"{dd_data.get('success_rate', 0):.1f}/100"]
+                ['📊 Sector', startup_data.get('sector', 'N/A')],
+                ['🎯 Stage', startup_data.get('stage', 'N/A')],
+                ['🌍 Geography', startup_data.get('geography', 'N/A')],
+                ['📈 Success Rate', f"{dd_data.get('success_rate', 0):.1f}%"],
+                ['🏆 Market Fit', f"{dd_data.get('market_score', 0)*100:.0f}%"]
             ]
 
-            info_table = Table(basic_info, colWidths=[2*inch, 4*inch])
+            info_table = Table(basic_info, colWidths=[2.2*inch, 4*inch])
             info_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#00D1FF')),
                 ('TEXTCOLOR', (0, 0), (0, -1), colors.white),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'LEFT'),
                 ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-                ('TOPPADDING', (0, 0), (-1, -1), 8),
-                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E0E0E0')),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
             ]))
 
             story.append(info_table)
-            story.append(Spacer(1, 0.3*inch))
+            story.append(Spacer(1, 0.25*inch))
 
-            # Summary
-            story.append(Paragraph("<b>Executive Summary</b>", heading_style))
+            # Executive Summary with icon
+            story.append(Paragraph("📋 <b>Executive Summary</b>", heading_style))
             summary = startup_data.get('summary', 'No summary available')
             story.append(Paragraph(summary, body_style))
             story.append(Spacer(1, 0.2*inch))
 
-            # Risk Heatmap as colored table
-            story.append(Paragraph("<b>Risk Assessment</b>", heading_style))
+            # Risk Heatmap - Enhanced with better colors and emojis
+            story.append(Paragraph("🔍 <b>Risk Assessment</b>", heading_style))
             risk_heatmap = dd_data.get('risk_heatmap', {})
 
             risk_data = [
-                ['Category', 'Risk Level'],
-                ['Technology', PDFGenerator._get_risk_color(risk_heatmap.get('tech', 'yellow'))],
-                ['Market', PDFGenerator._get_risk_color(risk_heatmap.get('market', 'yellow'))],
-                ['Financial', PDFGenerator._get_risk_color(risk_heatmap.get('finance', 'yellow'))],
-                ['Compliance', PDFGenerator._get_risk_color(risk_heatmap.get('compliance', 'green'))]
+                ['Risk Category', 'Assessment'],
+                ['👥 Team Risk', PDFGenerator._get_risk_color(risk_heatmap.get('team', 'yellow'))],
+                ['📊 Market Risk', PDFGenerator._get_risk_color(risk_heatmap.get('market', 'yellow'))],
+                ['💻 Tech Risk', PDFGenerator._get_risk_color(risk_heatmap.get('tech', 'yellow'))],
+                ['💰 Financial Risk', PDFGenerator._get_risk_color(risk_heatmap.get('financial', 'yellow'))],
+                ['⚡ Execution Risk', PDFGenerator._get_risk_color(risk_heatmap.get('execution', 'yellow'))]
             ]
 
-            risk_table = Table(risk_data, colWidths=[2*inch, 2*inch])
+            risk_table = Table(risk_data, colWidths=[2.5*inch, 2.5*inch])
             risk_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#00D1FF')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-                ('TOPPADDING', (0, 0), (-1, -1), 8),
-                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E0E0E0')),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
             ]))
 
             story.append(risk_table)
-            story.append(Spacer(1, 0.3*inch))
+            story.append(Spacer(1, 0.25*inch))
 
-            # Metrics Bar Chart
+            # Metrics Bar Chart with icon
             metrics_img = PDFGenerator._create_metrics_chart(dd_data)
             if metrics_img:
-                story.append(Paragraph("<b>Key Metrics</b>", heading_style))
+                story.append(Paragraph("📊 <b>Key Performance Metrics</b>", heading_style))
                 story.append(metrics_img)
                 story.append(Spacer(1, 0.2*inch))
 
-            # Key Points
-            story.append(Paragraph("<b>Key Investment Points</b>", heading_style))
+            # Key Investment Points with better formatting
+            story.append(Paragraph("💡 <b>Key Investment Points</b>", heading_style))
             key_points = dd_data.get('key_points', [])
 
             if key_points:
-                for point in key_points:
-                    story.append(Paragraph(f"• {point}", body_style))
+                for idx, point in enumerate(key_points, 1):
+                    story.append(Paragraph(f"<b>{idx}.</b> {point}", body_style))
             else:
                 story.append(Paragraph("No key points available", body_style))
 
-            story.append(Spacer(1, 0.2*inch))
+            story.append(Spacer(1, 0.25*inch))
 
-            # Detailed Analysis
+            # Detailed Analysis - THE CRITICAL 2 PARAGRAPHS
             detailed_analysis = dd_data.get('detailed_analysis', '')
             if detailed_analysis:
-                story.append(Paragraph("<b>Detailed Analysis</b>", heading_style))
-                story.append(Paragraph(detailed_analysis, body_style))
+                story.append(Paragraph("📝 <b>Detailed Investment Analysis</b>", heading_style))
 
-            # Footer
-            story.append(Spacer(1, 0.5*inch))
+                # Split the analysis into paragraphs if it contains \n\n
+                paragraphs = detailed_analysis.split('\\n\\n') if '\\n\\n' in detailed_analysis else [detailed_analysis]
+
+                for para in paragraphs:
+                    if para.strip():
+                        story.append(Paragraph(para.strip(), analysis_style))
+                        story.append(Spacer(1, 0.12*inch))
+
+            # Footer - Modern with better spacing
+            story.append(Spacer(1, 0.4*inch))
             footer_style = ParagraphStyle(
                 'Footer',
                 parent=styles['Normal'],
-                fontSize=8,
-                textColor=colors.grey,
-                alignment=TA_CENTER
+                fontSize=9,
+                textColor=colors.HexColor('#999999'),
+                alignment=TA_CENTER,
+                fontName='Helvetica'
             )
-            story.append(Paragraph("🤖 Generated with InvestAI - Powered by Multi-Agent Analysis", footer_style))
+            story.append(Paragraph("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", footer_style))
+            story.append(Spacer(1, 0.1*inch))
+            story.append(Paragraph("🤖 <b>Generated with InvestAI</b> • Powered by Multi-Agent Analysis 🚀", footer_style))
 
             # Build PDF
             doc.build(story)
@@ -180,13 +230,13 @@ class PDFGenerator:
 
     @staticmethod
     def _get_risk_color(risk_level: str) -> str:
-        """Convert risk level to colored text"""
+        """Convert risk level to colored text with emojis"""
         colors_map = {
-            'green': '✓ LOW RISK',
-            'yellow': '⚠ MEDIUM RISK',
-            'red': '✗ HIGH RISK'
+            'green': '🟢 LOW RISK',
+            'yellow': '🟡 MEDIUM RISK',
+            'red': '🔴 HIGH RISK'
         }
-        return colors_map.get(risk_level.lower(), '? UNKNOWN')
+        return colors_map.get(risk_level.lower(), '⚪ UNKNOWN')
 
     @staticmethod
     def _create_metrics_chart(dd_data: Dict[str, Any]) -> Image:
@@ -246,42 +296,140 @@ class PDFGenerator:
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=letter,
                                    rightMargin=50, leftMargin=50,
-                                   topMargin=50, bottomMargin=50)
+                                   topMargin=40, bottomMargin=40)
 
             story = []
             styles = getSampleStyleSheet()
 
-            # Title
+            # Modern Title Style
             title_style = ParagraphStyle(
                 'Title',
                 parent=styles['Heading1'],
-                fontSize=26,
+                fontSize=28,
                 textColor=colors.HexColor('#00D1FF'),
-                spaceAfter=30,
-                alignment=TA_CENTER
+                spaceAfter=15,
+                alignment=TA_CENTER,
+                fontName='Helvetica-Bold'
             )
 
-            story.append(Paragraph("<b>Investment Portfolio Analysis</b>", title_style))
-            story.append(Paragraph(f"Top {len(startups)} Shortlisted Startups", styles['Heading3']))
-            story.append(Spacer(1, 0.5*inch))
+            subtitle_style = ParagraphStyle(
+                'Subtitle',
+                parent=styles['Heading3'],
+                fontSize=12,
+                textColor=colors.HexColor('#666666'),
+                spaceAfter=35,
+                alignment=TA_CENTER,
+                fontName='Helvetica'
+            )
 
-            # Add each startup
+            heading_style = ParagraphStyle(
+                'Heading',
+                parent=styles['Heading2'],
+                fontSize=16,
+                textColor=colors.HexColor('#00D1FF'),
+                spaceAfter=12,
+                fontName='Helvetica-Bold'
+            )
+
+            body_style = ParagraphStyle(
+                'Body',
+                parent=styles['BodyText'],
+                fontSize=10,
+                spaceAfter=10,
+                leading=14,
+                fontName='Helvetica'
+            )
+
+            # Cover Page
+            story.append(Spacer(1, 1.5*inch))
+            story.append(Paragraph("🚀 <b>Investment Portfolio Analysis</b>", title_style))
+            story.append(Paragraph(f"Top {len(startups)} Shortlisted Startups • AI-Powered Due Diligence", subtitle_style))
+
+            # Summary Table
+            summary_data = [['Rank', 'Company', 'Sector', 'Success Rate']]
+            for idx, item in enumerate(startups, 1):
+                startup = item.get('startup', item)
+                dd = item.get('due_diligence', {})
+                rec = dd.get('recommendation', 'hold').upper()
+                rec_emoji = {"BUY": "✅", "STRONG BUY": "💎", "HOLD": "⏸", "PASS": "❌"}.get(rec, "ℹ️")
+
+                summary_data.append([
+                    f"{rec_emoji} #{idx}",
+                    startup.get('name', 'Unknown')[:30],
+                    startup.get('sector', 'N/A')[:25],
+                    f"{dd.get('success_rate', 0):.0f}%"
+                ])
+
+            summary_table = Table(summary_data, colWidths=[0.8*inch, 2.5*inch, 2*inch, 1*inch])
+            summary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#00D1FF')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (3, 0), (3, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E0E0E0')),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
+            ]))
+
+            story.append(summary_table)
+            story.append(PageBreak())
+
+            # Add each startup with detailed analysis
             for idx, item in enumerate(startups, 1):
                 startup = item.get('startup', item)
                 dd = item.get('due_diligence', {})
 
-                # Add individual startup report
-                story.append(Paragraph(f"<b>Rank #{idx}: {startup.get('name', 'Unknown')}</b>", styles['Heading2']))
-                story.append(Paragraph(f"Sector: {startup.get('sector', 'N/A')} | Stage: {startup.get('stage', 'N/A')}", styles['Normal']))
-                story.append(Paragraph(f"Success Rate: {dd.get('success_rate', 0):.1f}/100", styles['Normal']))
+                # Startup Header
+                rec = dd.get('recommendation', 'hold').upper()
+                rec_emoji = {"BUY": "✅", "STRONG BUY": "💎", "HOLD": "⏸", "PASS": "❌"}.get(rec, "ℹ️")
+
+                story.append(Paragraph(f"<b>#{idx} • {startup.get('name', 'Unknown')}</b> {rec_emoji}", heading_style))
+                story.append(Paragraph(f"📊 {startup.get('sector', 'N/A')} • 🎯 {startup.get('stage', 'N/A')} • 🌍 {startup.get('geography', 'N/A')}", body_style))
+                story.append(Paragraph(f"📈 Success Rate: <b>{dd.get('success_rate', 0):.1f}%</b> • 🏆 Market Fit: <b>{dd.get('market_score', 0)*100:.0f}%</b>", body_style))
                 story.append(Spacer(1, 0.2*inch))
 
+                # Executive Summary
                 summary = startup.get('summary', 'No summary')
-                story.append(Paragraph(summary[:500], styles['BodyText']))
-                story.append(Spacer(1, 0.3*inch))
+                story.append(Paragraph("<b>Executive Summary:</b>", body_style))
+                story.append(Paragraph(summary, body_style))
+                story.append(Spacer(1, 0.15*inch))
+
+                # Overall Summary from Risk Agent
+                overall = dd.get('overall_summary', '')
+                if overall:
+                    story.append(Paragraph("<b>Investment Summary:</b>", body_style))
+                    story.append(Paragraph(overall, body_style))
+                    story.append(Spacer(1, 0.15*inch))
+
+                # Detailed Analysis
+                detailed = dd.get('detailed_analysis', '')
+                if detailed:
+                    story.append(Paragraph("<b>📝 Detailed Analysis:</b>", body_style))
+                    paragraphs = detailed.split('\\n\\n') if '\\n\\n' in detailed else [detailed]
+                    for para in paragraphs:
+                        if para.strip():
+                            story.append(Paragraph(para.strip(), body_style))
+                            story.append(Spacer(1, 0.1*inch))
 
                 if idx < len(startups):
                     story.append(PageBreak())
+
+            # Footer
+            footer_style = ParagraphStyle(
+                'Footer',
+                parent=styles['Normal'],
+                fontSize=9,
+                textColor=colors.HexColor('#999999'),
+                alignment=TA_CENTER,
+                fontName='Helvetica'
+            )
+            story.append(Spacer(1, 0.3*inch))
+            story.append(Paragraph("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", footer_style))
+            story.append(Spacer(1, 0.1*inch))
+            story.append(Paragraph("🤖 <b>Generated with InvestAI</b> • Powered by Multi-Agent Analysis 🚀", footer_style))
 
             # Build
             doc.build(story)
