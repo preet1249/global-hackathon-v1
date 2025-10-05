@@ -67,16 +67,13 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated background - FIXED z-index and opacity */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+      {/* Animated background */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0, overflow: "hidden" }}>
         <motion.div
-          className="absolute top-20 left-10 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{
-            background: "radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%)",
-          }}
+          className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.05, 0.1, 0.05],
+            opacity: [0.3, 0.5, 0.3],
           }}
           transition={{
             duration: 8,
@@ -86,7 +83,7 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
         />
       </div>
 
-      <div className="relative z-10 container mx-auto px-6 py-12">
+      <div className="relative container mx-auto px-6 py-12" style={{ zIndex: 10 }}>
         {/* Header */}
         
 

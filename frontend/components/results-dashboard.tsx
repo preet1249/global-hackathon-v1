@@ -145,15 +145,12 @@ export function ResultsDashboard({ jobId, onReset }: ResultsDashboardProps) {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0, overflow: "hidden" }}>
         <motion.div
-          className="absolute top-20 right-10 w-[500px] h-[500px] rounded-full blur-3xl opacity-10"
-          style={{
-            background: "radial-gradient(circle, rgba(0, 209, 255, 0.15) 0%, transparent 70%)",
-          }}
+          className="absolute top-20 right-10 w-[500px] h-[500px] bg-[#00D1FF]/5 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.05, 0.1, 0.05],
+            opacity: [0.3, 0.5, 0.3],
           }}
           transition={{
             duration: 8,
@@ -162,13 +159,10 @@ export function ResultsDashboard({ jobId, onReset }: ResultsDashboardProps) {
           }}
         />
         <motion.div
-          className="absolute bottom-20 left-10 w-[400px] h-[400px] rounded-full blur-3xl opacity-10"
-          style={{
-            background: "radial-gradient(circle, rgba(0, 102, 255, 0.15) 0%, transparent 70%)",
-          }}
+          className="absolute bottom-20 left-10 w-[400px] h-[400px] bg-[#0066FF]/5 rounded-full blur-3xl"
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.05, 0.1, 0.05],
+            opacity: [0.2, 0.4, 0.2],
           }}
           transition={{
             duration: 10,
