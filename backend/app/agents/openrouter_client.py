@@ -14,10 +14,10 @@ class OpenRouterClient:
     # Model configurations - API key from environment variable
     MODELS = {
         "qwen": {
-            "name": "qwen/qwen-2.5-72b-instruct"
+            "name": "qwen/qwen3-30b-a3b-instruct-2507"
         },
         "gpt5": {
-            "name": "openai/gpt-4o-mini"
+            "name": "openai/gpt-5-nano"
         },
         "deepseek": {
             "name": "deepseek/deepseek-chat-v3.1"
