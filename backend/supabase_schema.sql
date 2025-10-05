@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS due_diligence (
   key_points JSONB,              -- array of bullet insights
   overall_summary TEXT,
   detailed_analysis TEXT,        -- 2 paragraphs for "View More"
+  recommendation TEXT,           -- buy|strong_buy|hold|pass
+  market_score FLOAT,            -- 0..1 from market agent
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

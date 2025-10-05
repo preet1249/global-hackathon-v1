@@ -479,7 +479,10 @@ class JobProcessor:
                     "revenue_projection": risk_result.get("revenue_projection"),
                     "profit_margin": risk_result.get("profit_margin"),
                     "key_points": risk_result.get("key_points"),
-                    "overall_summary": risk_result.get("overall_summary")
+                    "overall_summary": risk_result.get("overall_summary"),
+                    "detailed_analysis": risk_result.get("detailed_analysis", ""),
+                    "recommendation": risk_result.get("recommendation", "hold"),
+                    "market_score": market_result.get("market_score", 0.5)
                 }
 
                 dd_response = self.supabase.table("due_diligence").insert(dd_entry).execute()
