@@ -67,23 +67,7 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0, overflow: "hidden" }}>
-        <motion.div
-          className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
-      <div className="relative container mx-auto px-6 py-12" style={{ zIndex: 10 }}>
+      <div className="relative container mx-auto px-6 py-12">
         {/* Header */}
         
 

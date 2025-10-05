@@ -25,35 +25,7 @@ import { Footer } from "@/components/footer"
 export default function ProductPage() {
   return (
     <div className="min-h-screen bg-gradient-dark relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0, overflow: "hidden" }}>
-        <motion.div
-          className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.5, 0.3, 0.5],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
-      <div className="relative" style={{ zIndex: 10 }}>
+      <div className="relative">
         <Navbar />
 
         <main className="container mx-auto px-6 py-20">

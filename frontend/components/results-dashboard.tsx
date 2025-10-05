@@ -145,32 +145,6 @@ export function ResultsDashboard({ jobId, onReset }: ResultsDashboardProps) {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0, overflow: "hidden" }}>
-        <motion.div
-          className="absolute top-20 right-10 w-[500px] h-[500px] bg-[#00D1FF]/5 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-10 w-[400px] h-[400px] bg-[#0066FF]/5 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 py-8 sm:py-16 max-w-7xl">
         <motion.div
