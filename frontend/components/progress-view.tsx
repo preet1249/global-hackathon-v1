@@ -298,7 +298,7 @@ export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
           </motion.div>
 
           <div className="relative h-[400px] sm:h-[500px] mb-12 sm:mb-16">
-            <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 0 }}>
               <defs>
                 <linearGradient id="connection-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#00D1FF" stopOpacity="0.4" />
@@ -306,7 +306,7 @@ export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
                   <stop offset="100%" stopColor="#00D1FF" stopOpacity="0.4" />
                 </linearGradient>
                 <filter id="connection-glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                  <feGaussianBlur stdDeviation="0.3" result="coloredBlur" />
                   <feMerge>
                     <feMergeNode in="coloredBlur" />
                     <feMergeNode in="SourceGraphic" />
@@ -322,12 +322,12 @@ export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
                 return (
                   <motion.line
                     key={idx}
-                    x1={`${fromAgent.x}%`}
-                    y1={`${fromAgent.y}%`}
-                    x2={`${toAgent.x}%`}
-                    y2={`${toAgent.y}%`}
+                    x1={fromAgent.x}
+                    y1={fromAgent.y}
+                    x2={toAgent.x}
+                    y2={toAgent.y}
                     stroke={isActive ? "#00D1FF" : "url(#connection-gradient)"}
-                    strokeWidth={isActive ? "0.25" : "0.15"}
+                    strokeWidth={isActive ? "0.4" : "0.2"}
                     filter={isActive ? "url(#connection-glow)" : "none"}
                     initial={{ pathLength: 0, opacity: 0 }}
                     animate={{
@@ -346,10 +346,12 @@ export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
 
                 if (!isActive) return null
 
+                const pathData = `M ${fromAgent.x} ${fromAgent.y} L ${toAgent.x} ${toAgent.y}`
+
                 return (
                   <g key={`diamond-${idx}`}>
-                    <motion.path
-                      d="M 0,-4 L 3,0 L 0,4 L -3,0 Z"
+                    <motion.circle
+                      r="0.5"
                       fill="#00D1FF"
                       filter="url(#connection-glow)"
                       initial={{
@@ -367,7 +369,7 @@ export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
                         delay: idx * 0.4,
                       }}
                       style={{
-                        offsetPath: `path('M ${fromAgent.x * 8},${fromAgent.y * 5} L ${toAgent.x * 8},${toAgent.y * 5}')`,
+                        offsetPath: `path('${pathData}')`,
                       }}
                     />
                   </g>
@@ -441,13 +443,13 @@ export function ProgressView({ jobId, onComplete }: ProgressViewProps) {
                       </div>
                     </div>
 
-                    {isCompleted && !isActive && (
+                    {isCompleted && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#00D1FF] rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(0,209,255,0.6)]"
+                        className="absolute -top-2 -right-2 w-5 h-5 bg-[#00D1FF] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,209,255,0.8)] border-2 border-black"
                       >
-                        <Check className="w-2.5 h-2.5 text-black" />
+                        <Check className="w-3 h-3 text-black font-bold stroke-[3]" />
                       </motion.div>
                     )}
                   </motion.div>
