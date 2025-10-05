@@ -30,7 +30,7 @@ class OpenRouterClient:
             "key": "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"
         },
         "grok": {
-            "name": "x-ai/grok-2-1212",
+            "name": "x-ai/grok-4-fast",
             "key": "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"
         }
     }
