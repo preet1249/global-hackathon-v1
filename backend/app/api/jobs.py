@@ -27,6 +27,19 @@ async def create_job(
 ):
     """Create a new job for startup analysis - NO MOCK DATA!"""
     try:
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.info(f"Received job request - files: {len(files) if files else 0}, sheet: {bool(google_sheet_link)}")
+        logger.info(f"Filters: {filters}")
+
+        # Validate inputs
+        if not files and not google_sheet_link:
+            raise HTTPException(
+                status_code=422,
+                detail="Must provide either files or google_sheet_link"
+            )
+
         filters_data = json.loads(filters)
 
         # Create job in database
@@ -93,10 +106,14 @@ async def create_job(
             "message": "Job created successfully and processing started"
         }
 
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid filters JSON")
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid filters JSON: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Job creation error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.get("/{job_id}")
 async def get_job(job_id: str):
