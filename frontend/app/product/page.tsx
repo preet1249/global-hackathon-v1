@@ -46,7 +46,7 @@ export default function ProductPage() {
             >
               Your AI-Powered
               <br />
-              <span className="bg-gradient-blue bg-clip-text text-transparent glow-text">Investment Partner</span>
+              <span className="inline-block bg-gradient-blue bg-clip-text text-transparent glow-text">Investment Partner</span>
             </motion.h1>
 
             <motion.p
@@ -96,7 +96,7 @@ export default function ProductPage() {
               className="text-center mb-16"
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                How It <span className="bg-gradient-blue bg-clip-text text-transparent">Works</span>
+                How It <span className="inline-block bg-gradient-blue bg-clip-text text-transparent">Works</span>
               </h2>
               <p className="text-xl text-muted-foreground">Five intelligent agents working in perfect harmony</p>
             </motion.div>
@@ -271,7 +271,7 @@ function StepCard({
     >
       <div className="flex items-start gap-6">
         <div className="flex-shrink-0">
-          <div className="text-6xl font-bold bg-gradient-blue bg-clip-text text-transparent opacity-30">{number}</div>
+          <div className="text-6xl font-bold inline-block bg-gradient-blue bg-clip-text text-transparent opacity-30">{number}</div>
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-4">

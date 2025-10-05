@@ -78,7 +78,7 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
           >
             <h1 className="text-5xl font-bold mb-6 leading-tight">
               Let's find your next{" "}
-              <span className="bg-gradient-blue bg-clip-text text-transparent glow-text">5 winning investments</span>
+              <span className="inline-block bg-gradient-blue bg-clip-text text-transparent glow-text">5 winning investments</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
               Upload your Excel file with startup data and let our multi-agent AI system analyze, validate, and deliver investment-grade reports in minutes.

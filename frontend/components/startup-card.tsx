@@ -53,7 +53,7 @@ export function StartupCard({ startup, isSelected, onSelect, onDownload }: Start
               <p className="text-[10px] sm:text-xs text-foreground/60 mb-1">Fit Score</p>
               <div className="flex items-center gap-1 sm:gap-2">
                 <motion.div
-                  className="text-2xl sm:text-3xl font-bold bg-gradient-blue bg-clip-text text-transparent"
+                  className="text-2xl sm:text-3xl font-bold inline-block bg-gradient-blue bg-clip-text text-transparent"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200 }}
