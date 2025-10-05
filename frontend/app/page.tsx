@@ -31,7 +31,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-6xl md:text-7xl font-bold mb-6 leading-tight text-foreground"
             >
-              Find Your Next <span className="inline-block inline-block bg-gradient-blue bg-clip-text text-transparent glow-text">Winning</span>
+              Find Your Next <span className="inline-block bg-gradient-blue bg-clip-text text-transparent glow-text">Winning</span>
               <br />
               Investments
             </motion.h1>
