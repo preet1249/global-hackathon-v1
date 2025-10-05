@@ -8,8 +8,41 @@ logger = logging.getLogger(__name__)
 class GoogleSheetsParser:
     """
     Parse Google Sheets without API - uses CSV export
-    NO MOCK DATA - Real parsing only!
+    Flexible column mapping - handles various naming conventions
     """
+
+    # Column name variations (lowercase for matching)
+    COLUMN_MAPPINGS = {
+        "name": ["name", "company", "startup", "company name", "startup name", "business name"],
+        "sector": ["sector", "industry", "vertical", "category", "domain", "market"],
+        "stage": ["stage", "funding stage", "round", "series", "investment stage"],
+        "geography": ["geography", "location", "region", "country", "city", "market", "geo"],
+        "ticket_size": ["ticket_size", "ticket size", "funding", "investment", "amount", "raise", "capital"],
+        "summary": ["summary", "description", "about", "overview", "pitch", "brief"],
+        "website": ["website", "url", "link", "web", "site"],
+        "pdf_link": ["pdf_link", "pdf link", "deck", "pitch deck", "pdf", "document"],
+        "team": ["team", "founders", "founder", "ceo", "leadership"],
+        "traction": ["traction", "metrics", "revenue", "users", "growth", "customers"],
+        "product": ["product", "solution", "service", "offering", "what we do"]
+    }
+
+    @staticmethod
+    def find_header_index(headers: list, field_name: str) -> int:
+        """Find the index of best matching header"""
+        possible_names = GoogleSheetsParser.COLUMN_MAPPINGS.get(field_name, [field_name])
+
+        # Try exact match first
+        for i, header in enumerate(headers):
+            if header in possible_names:
+                return i
+
+        # Try partial match
+        for i, header in enumerate(headers):
+            for possible in possible_names:
+                if possible in header or header in possible:
+                    return i
+
+        return -1
 
     @staticmethod
     def extract_sheet_id(sheet_url: str) -> str:
@@ -65,6 +98,16 @@ class GoogleSheetsParser:
             # Get headers (first row)
             headers = [h.strip().lower() for h in rows[0].split(',')]
 
+            # Map headers to field indices
+            header_map = {}
+            for field in ["name", "sector", "stage", "geography", "ticket_size", "summary",
+                         "website", "pdf_link", "team", "traction", "product"]:
+                idx = GoogleSheetsParser.find_header_index(headers, field)
+                if idx != -1:
+                    header_map[field] = idx
+
+            logger.info(f"Header mapping: {header_map}")
+
             # Parse data rows
             startups = []
             for i, row in enumerate(rows[1:], start=2):
@@ -85,25 +128,19 @@ class GoogleSheetsParser:
 
                     values.append(current_value.strip())
 
-                    # Map values to headers
-                    row_data = {}
-                    for j, header in enumerate(headers):
-                        if j < len(values):
-                            row_data[header] = values[j]
-
-                    # Extract startup data
+                    # Extract startup data using mapped indices
                     startup = {
-                        "name": row_data.get("name", ""),
-                        "sector": row_data.get("sector", ""),
-                        "stage": row_data.get("stage", ""),
-                        "geography": row_data.get("geography", ""),
-                        "ticket_size": row_data.get("ticket_size", ""),
-                        "summary": row_data.get("summary", ""),
-                        "website": row_data.get("website", ""),
-                        "pdf_link": row_data.get("pdf_link", ""),
-                        "team": row_data.get("team", ""),
-                        "traction": row_data.get("traction", ""),
-                        "product": row_data.get("product", "")
+                        "name": values[header_map["name"]] if "name" in header_map and header_map["name"] < len(values) else "",
+                        "sector": values[header_map["sector"]] if "sector" in header_map and header_map["sector"] < len(values) else "",
+                        "stage": values[header_map["stage"]] if "stage" in header_map and header_map["stage"] < len(values) else "",
+                        "geography": values[header_map["geography"]] if "geography" in header_map and header_map["geography"] < len(values) else "",
+                        "ticket_size": values[header_map["ticket_size"]] if "ticket_size" in header_map and header_map["ticket_size"] < len(values) else "",
+                        "summary": values[header_map["summary"]] if "summary" in header_map and header_map["summary"] < len(values) else "",
+                        "website": values[header_map["website"]] if "website" in header_map and header_map["website"] < len(values) else "",
+                        "pdf_link": values[header_map["pdf_link"]] if "pdf_link" in header_map and header_map["pdf_link"] < len(values) else "",
+                        "team": values[header_map["team"]] if "team" in header_map and header_map["team"] < len(values) else "",
+                        "traction": values[header_map["traction"]] if "traction" in header_map and header_map["traction"] < len(values) else "",
+                        "product": values[header_map["product"]] if "product" in header_map and header_map["product"] < len(values) else ""
                     }
 
                     # Parse ticket size if present

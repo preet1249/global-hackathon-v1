@@ -8,8 +8,41 @@ logger = logging.getLogger(__name__)
 class ExcelParser:
     """
     Parse Excel files (.xlsx, .xls) and CSV files
-    Expected columns: name, sector, stage, geography, ticket_size, summary, website, pdf_link
+    Flexible column mapping - handles various naming conventions
     """
+
+    # Column name variations (lowercase for matching)
+    COLUMN_MAPPINGS = {
+        "name": ["name", "company", "startup", "company name", "startup name", "business name"],
+        "sector": ["sector", "industry", "vertical", "category", "domain", "market"],
+        "stage": ["stage", "funding stage", "round", "series", "investment stage"],
+        "geography": ["geography", "location", "region", "country", "city", "market", "geo"],
+        "ticket_size": ["ticket_size", "ticket size", "funding", "investment", "amount", "raise", "capital"],
+        "summary": ["summary", "description", "about", "overview", "pitch", "brief"],
+        "website": ["website", "url", "link", "web", "site"],
+        "pdf_link": ["pdf_link", "pdf link", "deck", "pitch deck", "pdf", "document"],
+        "team": ["team", "founders", "founder", "ceo", "leadership"],
+        "traction": ["traction", "metrics", "revenue", "users", "growth", "customers"],
+        "product": ["product", "solution", "service", "offering", "what we do"]
+    }
+
+    @staticmethod
+    def find_column(df_columns: List[str], field_name: str) -> str:
+        """Find the best matching column name from variations"""
+        possible_names = ExcelParser.COLUMN_MAPPINGS.get(field_name, [field_name])
+
+        # Try exact match first
+        for col in df_columns:
+            if col in possible_names:
+                return col
+
+        # Try partial match
+        for col in df_columns:
+            for possible in possible_names:
+                if possible in col or col in possible:
+                    return col
+
+        return None
 
     @staticmethod
     def parse_excel(file_bytes: bytes, filename: str) -> Dict[str, Any]:
@@ -45,23 +78,34 @@ class ExcelParser:
 
             # Normalize column names (lowercase, strip spaces)
             df.columns = df.columns.str.lower().str.strip()
+            df_cols = df.columns.tolist()
+
+            # Map columns intelligently
+            column_map = {}
+            for field in ["name", "sector", "stage", "geography", "ticket_size", "summary",
+                         "website", "pdf_link", "team", "traction", "product"]:
+                found_col = ExcelParser.find_column(df_cols, field)
+                if found_col:
+                    column_map[field] = found_col
+
+            logger.info(f"Column mapping: {column_map}")
 
             startups = []
 
             for idx, row in df.iterrows():
                 try:
                     startup = {
-                        "name": str(row.get("name", "")).strip(),
-                        "sector": str(row.get("sector", "")).strip(),
-                        "stage": str(row.get("stage", "")).strip(),
-                        "geography": str(row.get("geography", "")).strip(),
-                        "ticket_size": str(row.get("ticket_size", "")).strip(),
-                        "summary": str(row.get("summary", "")).strip(),
-                        "website": str(row.get("website", "")).strip(),
-                        "pdf_link": str(row.get("pdf_link", "")).strip(),
-                        "team": str(row.get("team", "")).strip(),
-                        "traction": str(row.get("traction", "")).strip(),
-                        "product": str(row.get("product", "")).strip()
+                        "name": str(row.get(column_map.get("name", "name"), "")).strip(),
+                        "sector": str(row.get(column_map.get("sector", "sector"), "")).strip(),
+                        "stage": str(row.get(column_map.get("stage", "stage"), "")).strip(),
+                        "geography": str(row.get(column_map.get("geography", "geography"), "")).strip(),
+                        "ticket_size": str(row.get(column_map.get("ticket_size", "ticket_size"), "")).strip(),
+                        "summary": str(row.get(column_map.get("summary", "summary"), "")).strip(),
+                        "website": str(row.get(column_map.get("website", "website"), "")).strip(),
+                        "pdf_link": str(row.get(column_map.get("pdf_link", "pdf_link"), "")).strip(),
+                        "team": str(row.get(column_map.get("team", "team"), "")).strip(),
+                        "traction": str(row.get(column_map.get("traction", "traction"), "")).strip(),
+                        "product": str(row.get(column_map.get("product", "product"), "")).strip()
                     }
 
                     # Skip empty rows
