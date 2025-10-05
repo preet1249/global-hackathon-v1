@@ -132,6 +132,15 @@
     background: linear-gradient(135deg, #00d1ff 0%, #0066ff 100%);
   }
 
+  /* Fix for gradient text - force background to only apply to text */
+  .bg-clip-text {
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    display: inline-block !important;
+  }
+
   .hover-3d {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
