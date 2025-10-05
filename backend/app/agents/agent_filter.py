@@ -68,7 +68,7 @@ Provide ONLY valid JSON:
             )
 
             if not result.get("success"):
-                logger.error(f"Filter agent failed: {result.get('error')}")
+                logger.error(f"Filter agent API error: {result.get('error')}")
                 return {
                     "success": False,
                     "error": result.get("error", "Unknown error"),
@@ -77,6 +77,14 @@ Provide ONLY valid JSON:
 
             # Parse JSON response
             content = result.get("content", "").strip()
+
+            if not content:
+                logger.error(f"Filter agent returned EMPTY content! Full result: {result}")
+                return {
+                    "success": False,
+                    "error": "API returned empty content",
+                    "agent": "filter"
+                }
 
             try:
                 if "```json" in content:
