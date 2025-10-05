@@ -401,25 +401,36 @@ class JobProcessor:
 
                     relevance_score = filter_result.get("relevance_score", 0.0)
 
+                    logger.info(f"🎯 {startup.get('name')}: Relevance Score = {relevance_score}")
+
                     # Update startup with relevance score
                     self.supabase.table("startups").update({
                         "relevance_score": relevance_score
                     }).eq("id", startup.get("id")).execute()
 
-                    if relevance_score >= 0.5:  # Threshold
-                        startup["relevance_score"] = relevance_score
-                        startup["filter_reasoning"] = filter_result.get("reasoning", "")
-                        filtered.append(startup)
+                    # Add ALL startups with their scores (no threshold filtering here)
+                    startup["relevance_score"] = relevance_score
+                    startup["filter_reasoning"] = filter_result.get("reasoning", "")
+                    filtered.append(startup)
 
                 # Progress update after each batch
                 progress_pct = 40 + int((i + batch_size) / len(startups) * 10)
                 await self.update_progress("filtering", progress_pct, f"Filtered {min(i + batch_size, len(startups))}/{len(startups)} startups...")
 
-            # Sort by relevance score
+            if not filtered:
+                logger.warning("No startups passed filtering!")
+                return []
+
+            # Sort by relevance score (highest first)
             filtered.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
 
-            # Take top 5
-            return filtered[:5]
+            logger.info(f"📊 Top 10 scores: {[(s.get('name'), s.get('relevance_score')) for s in filtered[:10]]}")
+
+            # Take top 5 BEST matches
+            top_5 = filtered[:5]
+            logger.info(f"✅ Selected TOP 5: {[s.get('name') for s in top_5]}")
+
+            return top_5
 
         except Exception as e:
             logger.error(f"Filtering error: {str(e)}")
