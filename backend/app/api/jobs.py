@@ -20,7 +20,7 @@ async def process_job_background(job_id: str):
 @router.post("/")
 async def create_job(
     background_tasks: BackgroundTasks,
-    files: Optional[List[UploadFile]] = File(None),
+    files: List[UploadFile] = File(default=[]),
     google_sheet_link: Optional[str] = Form(None),
     filters: str = Form(...),
     context_text: Optional[str] = Form(None)
