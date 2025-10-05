@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useCallback } from "react"
 import { motion } from "framer-motion"
-import { Upload, FileText, LinkIcon, Sparkles } from "lucide-react"
+import { Upload, FileText, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,7 +18,6 @@ interface UploadScreenProps {
 export function UploadScreen({ onStartScreening }: UploadScreenProps) {
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
-  const [sheetsUrl, setSheetsUrl] = useState("")
   const [thesis, setThesis] = useState("")
   const [sector, setSector] = useState("")
   const [stage, setStage] = useState("")
@@ -30,15 +29,14 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
     setIsDragging(false)
     const droppedFiles = Array.from(e.dataTransfer.files).filter(
       (file) =>
-        file.type === "application/pdf" ||
-        file.type === "text/csv" ||
-        file.name.endsWith('.csv') ||
         file.name.endsWith('.xlsx') ||
-        file.name.endsWith('.xls')
+        file.name.endsWith('.xls') ||
+        file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+        file.type === "application/vnd.ms-excel"
     )
     setFiles((prev) => {
       const combined = [...prev, ...droppedFiles]
-      return combined.slice(0, 50) // Max 50 files
+      return combined.slice(0, 10) // Max 10 Excel files
     })
   }, [])
 
@@ -46,22 +44,21 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files).filter(
         (file) =>
-          file.type === "application/pdf" ||
-          file.type === "text/csv" ||
-          file.name.endsWith('.csv') ||
           file.name.endsWith('.xlsx') ||
-          file.name.endsWith('.xls')
+          file.name.endsWith('.xls') ||
+          file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+          file.type === "application/vnd.ms-excel"
       )
       setFiles((prev) => {
         const combined = [...prev, ...selectedFiles]
-        return combined.slice(0, 50) // Max 50 files
+        return combined.slice(0, 10) // Max 10 Excel files
       })
     }
   }
 
   const handleStartScreening = () => {
-    if (files.length > 0 || sheetsUrl) {
-      onStartScreening(files, { thesis, sector, stage, geography, ticketSize }, sheetsUrl)
+    if (files.length > 0) {
+      onStartScreening(files, { thesis, sector, stage, geography, ticketSize }, "")
     }
   }
 
@@ -84,8 +81,7 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
               <span className="bg-gradient-blue bg-clip-text text-transparent glow-text">5 winning investments</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Upload pitch decks and let our multi-agent AI system analyze, validate, and deliver investment-grade
-              reports.
+              Upload your Excel file with startup data and let our multi-agent AI system analyze, validate, and deliver investment-grade reports in minutes.
             </p>
             <NeuralNetwork />
           </motion.div>
@@ -97,12 +93,21 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="glass rounded-3xl p-8"
           >
-            <h2 className="text-2xl font-semibold mb-6">Upload & Configure</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-xl bg-gradient-blue/10 border border-[#00D1FF]/20">
+                <Sparkles className="w-6 h-6 text-[#00D1FF]" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold">Upload & Configure</h2>
+                <p className="text-sm text-muted-foreground">Excel files only (.xls, .xlsx)</p>
+              </div>
+            </div>
 
             {/* File Upload */}
             <div className="mb-6">
-              <Label className="text-sm font-medium mb-2 block">
-                Upload Files (PDF, CSV, Google Sheets) - Max 50 PDFs
+              <Label className="text-sm font-medium mb-3 block flex items-center gap-2">
+                📊 Upload Excel File(s)
+                <span className="text-xs font-normal text-muted-foreground">(Max 10 files)</span>
               </Label>
               <div
                 onDrop={handleDrop}
@@ -111,61 +116,56 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
                   setIsDragging(true)
                 }}
                 onDragLeave={() => setIsDragging(false)}
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
-                  isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                className={`border-2 border-dashed rounded-xl p-10 text-center transition-all cursor-pointer ${
+                  isDragging
+                    ? "border-[#00D1FF] bg-[#00D1FF]/5 scale-[1.02]"
+                    : "border-border hover:border-[#00D1FF]/50 hover:bg-[#00D1FF]/5"
                 }`}
               >
                 <input
                   type="file"
                   multiple
-                  accept=".pdf,.csv,.xlsx,.xls"
+                  accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                   onChange={handleFileInput}
                   className="hidden"
                   id="file-upload"
                 />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Drag & drop files or click to browse
+                <label htmlFor="file-upload" className="cursor-pointer block">
+                  <div className="mb-4 inline-block p-4 rounded-full bg-gradient-blue/10 border border-[#00D1FF]/20">
+                    <Upload className="w-8 h-8 text-[#00D1FF]" />
+                  </div>
+                  <p className="text-base font-medium mb-2">
+                    {files.length === 0 ? "Drop your Excel files here" : `${files.length} file(s) selected`}
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    or click to browse from your computer
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Supports: PDF, CSV, Excel (.xlsx, .xls) • Up to 50 files
+                    ✨ Supports: <span className="text-[#00D1FF] font-medium">.xlsx</span> and <span className="text-[#00D1FF] font-medium">.xls</span> files only
                   </p>
                   {files.length > 0 && (
-                    <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
+                    <div className="mt-6 space-y-2 max-h-40 overflow-y-auto">
                       {files.map((file, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-sm text-primary justify-center">
-                          <FileText className="w-4 h-4" />
-                          {file.name}
+                        <div key={idx} className="flex items-center gap-3 text-sm bg-[#00D1FF]/5 border border-[#00D1FF]/20 rounded-lg px-4 py-2.5 justify-center">
+                          <FileText className="w-4 h-4 text-[#00D1FF]" />
+                          <span className="font-medium">{file.name}</span>
+                          <span className="text-xs text-muted-foreground">({(file.size / 1024).toFixed(1)} KB)</span>
                         </div>
                       ))}
-                      {files.length >= 50 && (
-                        <p className="text-xs text-amber-500 mt-2">Maximum 50 files reached</p>
+                      {files.length >= 10 && (
+                        <p className="text-xs text-amber-500 mt-3 font-medium">✓ Maximum 10 files reached</p>
                       )}
                     </div>
                   )}
                 </label>
               </div>
-            </div>
-
-            {/* Google Sheets URL */}
-            <div className="mb-6">
-              <Label htmlFor="sheets-url" className="text-sm font-medium mb-2 block">
-                Or Paste Public Google Sheets Link
-              </Label>
-              <div className="relative">
-                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="sheets-url"
-                  placeholder="https://docs.google.com/spreadsheets/d/..."
-                  value={sheetsUrl}
-                  onChange={(e) => setSheetsUrl(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="mt-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">💡 Required columns:</span> name, sector, stage, geography, ticket_size, summary
+                  <br />
+                  <span className="font-medium text-foreground">📝 Optional columns:</span> team, traction, product, website
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Sheet must be public with columns: name, sector, stage, geography, ticket_size, summary, pdf_link
-              </p>
             </div>
 
             {/* Investment Thesis */}
@@ -233,11 +233,18 @@ export function UploadScreen({ onStartScreening }: UploadScreenProps) {
             {/* Start Button */}
             <Button
               onClick={handleStartScreening}
-              disabled={files.length === 0 && !sheetsUrl}
-              className="w-full bg-gradient-blue hover:opacity-90 text-white py-6 text-lg group"
+              disabled={files.length === 0}
+              className="w-full bg-gradient-blue hover:opacity-90 text-white py-6 text-lg font-semibold group transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              🚀 Start Screening
+              <Sparkles className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+              Start AI Analysis
+              <span className="ml-2 group-hover:translate-x-1 transition-transform inline-block">→</span>
             </Button>
+            {files.length === 0 && (
+              <p className="text-xs text-center text-muted-foreground mt-3">
+                Upload at least one Excel file to start
+              </p>
+            )}
           </motion.div>
         </div>
       </div>
